@@ -16,7 +16,7 @@ show_camera = False
 pygame.mixer.init()
 
 # Path to the manually downloaded Haarcascade file
-haarcascade_path = '/home/aown/Desktop/eBabySitter/server/data/haarcascade_frontalface_default.xml'
+haarcascade_path = '/home/aown/Desktop/eBabySitter/server/data/haarcascades/haarcascade_frontalface_default.xml'
 face_cascade = cv2.CascadeClassifier(haarcascade_path)
 
 if face_cascade.empty():
