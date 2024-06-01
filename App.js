@@ -48,21 +48,21 @@ const App = () => {
   };
 
   const toggleCameraOff = async () => {
-    try {
-      const response = await fetch('http://127.0.0.1:5000/api/turn-off-camera', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ show_camera: false }), // Turn off the camera
-      });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
+    // try {
+    //   const response = await fetch('http://127.0.0.1:5000/api/turn-off-camera', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({ show_camera: false }), // Turn off the camera
+    //   });
+    //   if (!response.ok) {
+    //     throw new Error('Network response was not ok');
+    //   }
       setShowCamera(false);
-    } catch (error) {
-      console.error('Error turning off camera:', error);
-    }
+    // } catch (error) {
+    //   console.error('Error turning off camera:', error);
+    // }
   };
 
   const playSong = async () => {
