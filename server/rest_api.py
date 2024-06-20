@@ -13,7 +13,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")  # Allow all origins for WebS
 show_camera = False
 
 # Initialize pygame mixer for playing audio
-pygame.mixer.init()
+# pygame.mixer.init()
 
 # Path to the manually downloaded Haarcascade file
 haarcascade_path = '/home/aown/Desktop/eBabySitter/server/data/haarcascades/haarcascade_frontalface_default.xml'
