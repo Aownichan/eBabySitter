@@ -6,7 +6,7 @@ import random
 
 song_blueprint = Blueprint('song', __name__)
 
-pygame.mixer.init()
+#pygame.mixer.init()
 
 @song_blueprint.route('/api/play-song', methods=['POST'])
 def play_song():
