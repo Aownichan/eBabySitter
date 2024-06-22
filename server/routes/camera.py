@@ -6,7 +6,12 @@ from flask_socketio import emit
 camera_blueprint = Blueprint('camera', __name__)
 
 camera = None
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+# Path to the manually downloaded Haarcascade file
+haarcascade_path = '/home/aown/Desktop/eBabySitter/server/data/haarcascades/haarcascade_frontalface_default.xml'
+face_cascade = cv2.CascadeClassifier(haarcascade_path)
+
+if face_cascade.empty():
+    raise IOError("Failed to load haarcascade_frontalface_default.xml. Check the path and OpenCV installation.")
 
 @camera_blueprint.route('/api/show-camera', methods=['POST'])
 def show_camera():
