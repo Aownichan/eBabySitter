@@ -11,7 +11,12 @@ def detect_faces(frame, face_cascade):
 
 def main():
     # Load the pre-trained Haar cascades classifier for face detection
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    # Path to the manually downloaded Haarcascade file
+    haarcascade_path = '/home/aown/Desktop/eBabySitter/server/data/haarcascades/haarcascade_frontalface_default.xml'
+    face_cascade = cv2.CascadeClassifier(haarcascade_path)
+
+    if face_cascade.empty():
+        raise IOError("Failed to load haarcascade_frontalface_default.xml. Check the path and OpenCV installation.")
 
     # Open the default camera (usually the built-in webcam)
     cap = cv2.VideoCapture(0)
