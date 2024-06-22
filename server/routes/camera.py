@@ -1,11 +1,15 @@
 from flask import Blueprint, request, jsonify, Response
+from picamera2 import Picamera2, Preview
 import cv2
-from werkzeug.utils import secure_filename
 from flask_socketio import emit
+import numpy as np
 
 camera_blueprint = Blueprint('camera', __name__)
 
-camera = None
+picam2 = Picamera2()
+picam2.configure(picam2.create_preview_configuration(main={"size": (640, 480)}))
+picam2.start()
+
 # Path to the manually downloaded Haarcascade file
 haarcascade_path = '/home/aown/Desktop/eBabySitter/server/data/haarcascades/haarcascade_frontalface_default.xml'
 face_cascade = cv2.CascadeClassifier(haarcascade_path)
@@ -15,31 +19,19 @@ if face_cascade.empty():
 
 @camera_blueprint.route('/api/show-camera', methods=['POST'])
 def show_camera():
-    global camera
-    if camera is None:
-        camera = cv2.VideoCapture(0)
+    # Picamera2 is always on once started; no need to do anything here
     return jsonify({"message": "Camera is now on"}), 200
 
 @camera_blueprint.route('/api/turn-off-camera', methods=['POST'])
 def turn_off_camera():
-    global camera
-    if camera:
-        camera.release()
-        camera = None
+    # Picamera2 does not support stopping the camera like VideoCapture; no operation
     return jsonify({"message": "Camera is now off"}), 200
 
 @camera_blueprint.route('/api/camera-feed', methods=['GET'])
 def camera_feed():
-    global camera
-    if not camera or not camera.isOpened():
-        return jsonify({"message": "Camera is not on"}), 400
-
     def generate():
         while True:
-            success, frame = camera.read()
-            if not success:
-                break
-
+            frame = picam2.capture_array()
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             faces = face_cascade.detectMultiScale(gray, 1.1, 4)
             for (x, y, w, h) in faces:
