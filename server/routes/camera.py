@@ -21,7 +21,7 @@ def initialize_camera():
     if picam2 is None:
         try:
             picam2 = Picamera2()
-            picam2.configure(picam2.create_preview_configuration(main={"size": (640, 480)}))
+            picam2.configure(picam2.create_preview_configuration(main={"size": (320, 240)}))
             picam2.start()
         except RuntimeError as e:
             print(f"Failed to initialize camera: {e}")
@@ -49,17 +49,23 @@ def camera_feed():
         return jsonify({"message": "Camera is not on"}), 400
 
     def generate():
+        skip_frames = 5  # Skip face detection every 5 frames for performance
+        frame_count = 0
         while True:
             frame = picam2.capture_array()
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            faces = face_cascade.detectMultiScale(gray, 1.1, 4)
-            for (x, y, w, h) in faces:
-                cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+            if frame_count % skip_frames == 0:
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+                for (x, y, w, h) in faces:
+                    cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+            frame_count += 1
 
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+    return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
             # if len(faces) == 0:
             #     emit('no_face_detected', {'data': 'No face detected'})
