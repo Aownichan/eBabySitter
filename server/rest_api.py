@@ -10,6 +10,8 @@ import string
 from werkzeug.utils import secure_filename
 from routes.auth import auth_blueprint
 import time
+import threading
+import queue
 
 app = Flask(__name__)
 CORS(app)
@@ -18,6 +20,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")  # Allow all origins for WebS
 show_camera = False
 
 picam2 = None
+frame_queue = queue.Queue()
 
 # Initialize pygame mixer for playing audio
 pygame.mixer.init()
@@ -41,11 +44,26 @@ def initialize_camera():
             picam2 = None
 
 def generate_camera_frames():
-    picam2.start()
     while True:
         if show_camera:
             frame = picam2.capture_array()
+            frame_queue.put(frame)
 
+            # Encode frame to JPEG format for streaming
+            ret, jpeg = cv2.imencode('.jpg', frame)
+            frame_bytes = jpeg.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+        else:
+            # Send a placeholder image when camera is off
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + open('placeholder.jpg', 'rb').read() + b'\r\n')
+
+def face_detection():
+    while True:
+        if not frame_queue.empty():
+            frame = frame_queue.get()
+            
             # Convert frame to grayscale for face detection
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -56,19 +74,9 @@ def generate_camera_frames():
             for (x, y, w, h) in faces:
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
 
-            # Encode frame to JPEG format for streaming
-            ret, jpeg = cv2.imencode('.jpg', frame)
-            frame_bytes = jpeg.tobytes()
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-
             # Send a message to the client if no faces are detected
             if len(faces) == 0:
                 socketio.emit('no_face_detected', {'message': 'No face detected'})
-        else:
-            # Send a placeholder image when camera is off
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + open('placeholder.jpg', 'rb').read() + b'\r\n')
 
 @app.route('/api/data')
 def get_data():
@@ -160,6 +168,7 @@ def save_file():
         #play_audio(filepath)
         return jsonify({"message": "audio saved successfully", "filename": filename}), 200
 
-
 if __name__ == '__main__':
+    face_detection_thread = threading.Thread(target=face_detection, daemon=True)
+    face_detection_thread.start()
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
