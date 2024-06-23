@@ -1,14 +1,15 @@
 from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
-from picamera2 import Picamera2
+from picamera2 import Picamera2, Picamera2Error
 import cv2
 import pygame
 import os
 import random
 import string
-from werkzeug.utils import secure_filename 
+from werkzeug.utils import secure_filename
 from routes.auth import auth_blueprint
+import time
 
 app = Flask(__name__)
 CORS(app)
@@ -25,9 +26,20 @@ face_cascade = cv2.CascadeClassifier(haarcascade_path)
 
 app.register_blueprint(auth_blueprint)
 
-picam2 = Picamera2()
-config = picam2.create_preview_configuration(main={"size": (640, 480)})
-picam2.configure(config)
+# Attempt to initialize the camera
+def initialize_camera():
+    for _ in range(5):
+        try:
+            picam2 = Picamera2()
+            config = picam2.create_preview_configuration(main={"size": (640, 480)})
+            picam2.configure(config)
+            return picam2
+        except Picamera2Error as e:
+            print(f"Camera initialization failed: {e}")
+            time.sleep(1)
+    raise RuntimeError("Failed to initialize the camera after multiple attempts.")
+
+picam2 = initialize_camera()
 
 def generate_camera_frames():
     picam2.start()
@@ -97,7 +109,7 @@ def play_song():
 @app.route('/api/stop-song', methods=['POST'])
 def stop_song():
     pygame.mixer.music.stop()
-    return jsonify({'success': True}) 
+    return jsonify({'success': True})
 
 # Upload folder configuration
 UPLOAD_FOLDER = 'uploads'
@@ -115,8 +127,8 @@ def upload_file():
     if file:
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)  
-        print(filepath)  
+        file.save(filepath)
+        print(filepath)
 
         #play_audio(filepath)
         return jsonify({"message": "File uploaded successfully", "filename": filename}), 200
@@ -142,8 +154,8 @@ def save_file():
     if file:
         filename = generate_random_string_with_extension(6)
         filepath = os.path.join(app.config['SAVE_FOLDER'], filename)
-        file.save(filepath)  
-        print(filepath)  
+        file.save(filepath)
+        print(filepath)
 
         #play_audio(filepath)
         return jsonify({"message": "audio saved successfully", "filename": filename}), 200
