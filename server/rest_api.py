@@ -46,25 +46,14 @@ def generate_camera_frames():
         if show_camera:
             frame = picam2.capture_array()
 
-            # Convert frame to grayscale for face detection
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            # Optional: Resize frame to reduce processing time
+            # frame = cv2.resize(frame, (160, 120), interpolation=cv2.INTER_LINEAR)
 
-            # Detect faces in the grayscale frame
-            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-
-            # Draw bounding boxes around detected faces
-            for (x, y, w, h) in faces:
-                cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
-
-            # Encode frame to JPEG format for streaming
-            ret, jpeg = cv2.imencode('.jpg', frame)
+            # Encode frame to JPEG format for streaming, consider adjusting quality for better performance
+            ret, jpeg = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
             frame_bytes = jpeg.tobytes()
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-
-            # Send a message to the client if no faces are detected
-            if len(faces) == 0:
-                socketio.emit('no_face_detected', {'message': 'No face detected'})
         else:
             # Send a placeholder image when camera is off
             yield (b'--frame\r\n'
