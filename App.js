@@ -34,7 +34,8 @@ const App = () => {
         <Stack.Navigator initialRouteName="Home">
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="SignUp" component={SignUpScreen} />
-          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} /> 
+          <Stack.Screen name="Main" component={MainPage} />
         </Stack.Navigator>
       </NavigationContainer>
     );

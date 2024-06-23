@@ -6,9 +6,9 @@ import random
 
 song_blueprint = Blueprint('song', __name__)
 
-#pygame.mixer.init()
+pygame.mixer.init()
 
-@song_blueprint.route('/api/play-song', methods=['POST'])
+@song_blueprint.route('/playsong', methods=['GET'])
 def play_song():
     sounds_folder = 'sounds'
     if not os.path.exists(sounds_folder):
@@ -21,9 +21,9 @@ def play_song():
     song = random.choice(songs)
     pygame.mixer.music.load(os.path.join(sounds_folder, song))
     pygame.mixer.music.play()
-    return jsonify({"message": f"Playing {song}"}), 200
+    return jsonify({"message": f"Play {song}"}), 200
 
-@song_blueprint.route('/api/stop-song', methods=['POST'])
+@song_blueprint.route('/api/stop-song', methods=['GET'])
 def stop_song():
     pygame.mixer.music.stop()
     return jsonify({"message": "Song stopped"}), 200
