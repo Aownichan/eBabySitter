@@ -1,9 +1,10 @@
 from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
-from picamera2 import Picamera2, Preview
+import cv2
 import pygame
 import os
+import random
 import random
 import string
 from werkzeug.utils import secure_filename 
@@ -23,19 +24,17 @@ pygame.mixer.init()
 haarcascade_path = '/home/aown/Desktop/eBabySitter/server/data/haarcascades/haarcascade_frontalface_default.xml'
 face_cascade = cv2.CascadeClassifier(haarcascade_path)
 
+
 app.register_blueprint(auth_blueprint)
 
 def generate_camera_frames():
-    picam2 = Picamera2()
-    preview_config = picam2.create_preview_configuration()
-    picam2.configure(preview_config)
-    picam2.start()
-    
+    camera = cv2.VideoCapture(0)   # Use 0 for default camera, or replace with camera index if multiple cameras are available
     while True:
         if show_camera:
-            # Capture the frame
-            frame = picam2.capture_array()
-            
+            success, frame = camera.read()
+            if not success:
+                break
+
             # Convert frame to grayscale for face detection
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
