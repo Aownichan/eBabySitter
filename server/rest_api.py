@@ -1,7 +1,6 @@
 from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
-# import cv2  # Removed cv2 as we are using picamera2
 from picamera2 import Picamera2, Preview
 import pygame
 import os
@@ -9,6 +8,7 @@ import random
 import string
 from werkzeug.utils import secure_filename 
 from routes.auth import auth_blueprint
+import cv2
 
 app = Flask(__name__)
 CORS(app)
