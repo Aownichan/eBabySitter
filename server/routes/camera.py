@@ -61,7 +61,7 @@ def camera_feed():
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
-            if len(faces) == 0:
-                emit('no_face_detected', {'data': 'No face detected'})
+            # if len(faces) == 0:
+            #     emit('no_face_detected', {'data': 'No face detected'})
 
     return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
