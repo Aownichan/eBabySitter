@@ -20,7 +20,8 @@ show_camera = False
 pygame.mixer.init()
 
 # Load pre-trained face detection model
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+haarcascade_path = '/home/aown/Desktop/eBabySitter/server/data/haarcascades/haarcascade_frontalface_default.xml'
+face_cascade = cv2.CascadeClassifier(haarcascade_path)
 
 
 app.register_blueprint(auth_blueprint)
