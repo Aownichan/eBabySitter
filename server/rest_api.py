@@ -17,6 +17,8 @@ socketio = SocketIO(app, cors_allowed_origins="*")  # Allow all origins for WebS
 
 show_camera = False
 
+picam2 = None
+
 # Initialize pygame mixer for playing audio
 pygame.mixer.init()
 
@@ -37,8 +39,6 @@ def initialize_camera():
         except RuntimeError as e:
             print(f"Failed to initialize camera: {e}")
             picam2 = None
-
-picam2 = initialize_camera()
 
 def generate_camera_frames():
     picam2.start()
@@ -77,6 +77,7 @@ def get_data():
 
 @app.route('/api/show-camera', methods=['POST'])
 def toggle_camera():
+    initialize_camera()
     global show_camera
     show_camera = True
     return jsonify({'success': True})
