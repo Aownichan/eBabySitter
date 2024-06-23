@@ -1,7 +1,7 @@
 from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
-from picamera2 import Picamera2, Picamera2Error
+from picamera2 import Picamera2
 import cv2
 import pygame
 import os
@@ -28,16 +28,15 @@ app.register_blueprint(auth_blueprint)
 
 # Attempt to initialize the camera
 def initialize_camera():
-    for _ in range(5):
+    global picam2
+    if picam2 is None:
         try:
             picam2 = Picamera2()
-            config = picam2.create_preview_configuration(main={"size": (640, 480)})
-            picam2.configure(config)
-            return picam2
-        except Picamera2Error as e:
-            print(f"Camera initialization failed: {e}")
-            time.sleep(1)
-    raise RuntimeError("Failed to initialize the camera after multiple attempts.")
+            picam2.configure(picam2.create_preview_configuration(main={"size": (320, 240)}))
+            picam2.start()
+        except RuntimeError as e:
+            print(f"Failed to initialize camera: {e}")
+            picam2 = None
 
 picam2 = initialize_camera()
 
